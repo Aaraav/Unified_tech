@@ -15,5 +15,5 @@ app.use('/auth', authRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`✅ Worker ${process.pid} started on port ${PORT}`);
+  // console.log(`✅ Worker ${process.pid} started on port ${PORT}`);
 });

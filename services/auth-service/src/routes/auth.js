@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { hashPassword, verifyPassword } = require('../utils/hash');
 const { success, error } = require('../utils/response');
 const { JWT_SECRET } = require('../config');
-
+const {sendTokenMessage}=require('../../kafka/producer')
 const router = express.Router();
 
 
@@ -26,11 +26,18 @@ function generateTokens(user) {
 }
 
 
+// const {
+//   storeRefreshToken,
+//   isRefreshTokenValid,
+//   invalidateRefreshToken
+// } = require('../utils/tokens');
+
 const {
   storeRefreshToken,
   isRefreshTokenValid,
   invalidateRefreshToken
-} = require('../utils/tokens');
+} = require('../utils/tokenServiceClient'); // ✅ now uses axios to token-service
+
 
 router.post('/refresh', async (req, res) => {
   const { refreshToken } = req.body;
@@ -39,27 +46,33 @@ router.post('/refresh', async (req, res) => {
   try {
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
-    const isValid = await isRefreshTokenValid(refreshToken);
-    if (!isValid) return error(res, 'Invalid refresh token', 403);
+    // One-way Kafka message for validation (no response expected)
+    await sendTokenMessage('validate', { token: refreshToken });
 
-    await invalidateRefreshToken(refreshToken); // rotate old token
+    // Also rotate old token
+    await sendTokenMessage('invalidate', { token: refreshToken });
 
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) return error(res, 'User not found', 404);
 
-const { accessToken, refreshToken } = generateTokens(user);
-await storeRefreshToken(refreshToken, user.id, 60 * 60 * 24 * 7);
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
-return success(res, {
-  accessToken,
-  refreshToken,
-  user: { id: user.id, email: user.email }
-}, 201);
+    await sendTokenMessage('store', {
+      token: newRefreshToken,
+      userId: user.id,
+      expiresInSec: 60 * 60 * 24 * 7
+    });
 
+    return success(res, {
+      accessToken,
+      refreshToken: newRefreshToken,
+      user: { id: user.id, email: user.email }
+    }, 201);
   } catch (err) {
     return error(res, 'Token expired or invalid', 403);
   }
 });
+
 
 
 router.post('/signup', async (req, res) => {
@@ -74,7 +87,7 @@ router.post('/signup', async (req, res) => {
     });
 
     const { accessToken, refreshToken } = generateTokens(user);
-await storeRefreshToken(refreshToken, user.id, 60 * 60 * 24 * 7);
+await sendTokenMessage('store', { token: refreshToken, userId: user.id, expiresInSec: 60 * 60 * 24 * 7 });
 
 return success(res, {
   accessToken,
@@ -97,7 +110,7 @@ router.post('/login', async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
-    await storeRefreshToken(refreshToken, user.id, 60 * 60 * 24 * 7); // 7 days
+await sendTokenMessage('store', { token: refreshToken, userId: user.id, expiresInSec: 60 * 60 * 24 * 7 });
 
     return success(res, { accessToken, refreshToken });
   } catch (err) {
@@ -110,7 +123,7 @@ router.post('/login', async (req, res) => {
 router.post('/logout', async (req, res) => {
   const { refreshToken } = req.body;
   if (refreshToken) {
-    await invalidateRefreshToken(refreshToken);
+    await sendTokenMessage('invalidate', { token: refreshToken });
   }
   return success(res, { message: 'Logged out' });
 });

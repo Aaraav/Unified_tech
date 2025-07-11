@@ -4,18 +4,20 @@ const authRoutes = require('./routes/auth');
 const errorHandler = require('./middleware/errorHandler');
 const rateLimiter=require('./middleware/ratelimiter');
 const { PORT } = require('./config');
+const { initProducer } = require('../kafka/producer');
+initProducer().catch(console.error);
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(rateLimiter);
+// app.use(rateLimiter);
 app.use(errorHandler);
 
 app.use('/auth', authRoutes);
 
 app.listen(PORT, () => {
-  console.log(`🚀 Auth service running on port ${PORT}`);
+  // console.log(`🚀 Auth service running on port ${PORT}`);
 });
 
 // const cluster = require('cluster');

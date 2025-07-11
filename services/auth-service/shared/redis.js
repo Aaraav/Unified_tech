@@ -12,10 +12,10 @@ const connectWithRetry = async (retries = 5, delay = 2000) => {
   while (retries) {
     try {
       await redisClient.connect();
-      console.log('[REDIS] Connected!');
+      // console.log('[REDIS] Connected!');
       break;
     } catch (err) {
-      console.error(`[REDIS] Connection failed. Retrying in ${delay / 1000}s...`);
+      // console.error(`[REDIS] Connection failed. Retrying in ${delay / 1000}s...`);
       retries--;
       await new Promise((res) => setTimeout(res, delay));
     }
