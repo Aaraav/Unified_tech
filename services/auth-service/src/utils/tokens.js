@@ -11,9 +11,9 @@ async function storeRefreshToken(token, userId, expiresInSec) {
   const start = Date.now();
   try {
     await redisClient.set(key, userId, { EX: expiresInSec });
-    console.log(`[REDIS] Stored refresh token for user ${userId} in ${Date.now() - start}ms`);
+    // console.log(`[REDIS] Stored refresh token for user ${userId} in ${Date.now() - start}ms`);
   } catch (err) {
-    console.error(`[REDIS] Error storing refresh token [${key}]:`, err.message);
+    // console.error(`[REDIS] Error storing refresh token [${key}]:`, err.message);
     throw err;
   }
 }
@@ -34,14 +34,14 @@ async function isRefreshTokenValid(token) {
     ]);
 
     if (isUsed) {
-      console.warn(`[REDIS] Token has already been used: ${usedKey}`);
+      // console.warn(`[REDIS] Token has already been used: ${usedKey}`);
       return null;
     }
 
     if (userId) {
-      console.log(`[REDIS] Valid refresh token for user: ${userId}`);
+      // console.log(`[REDIS] Valid refresh token for user: ${userId}`);
     } else {
-      console.warn(`[REDIS] Refresh token not found or expired: ${key}`);
+      // console.warn(`[REDIS] Refresh token not found or expired: ${key}`);
     }
 
     return userId || null;
@@ -61,9 +61,9 @@ async function invalidateRefreshToken(token) {
   try {
     await redisClient.del(key);
     await redisClient.set(usedKey, '1', { EX: 60 * 60 * 24 }); // 24h block for reuse
-    console.log(`[REDIS] Refresh token invalidated and marked as used: ${key}`);
+    // console.log(`[REDIS] Refresh token invalidated and marked as used: ${key}`);
   } catch (err) {
-    console.error(`[REDIS] Error invalidating token [${key}]:`, err.message);
+    // console.error(`[REDIS] Error invalidating token [${key}]:`, err.message);
   }
 }
 

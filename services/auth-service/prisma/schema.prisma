@@ -10,11 +10,10 @@ datasource db {
 model User {
   id          String   @id @default(uuid())
   email       String   @unique
-  password    String?   // optional for OAuth users
+  password    String?
   name        String?
-  provider    String?   // 'google' | 'linkedin' | null
-  providerId  String?   // external user ID from Google/LinkedIn
+  provider    String?     // new
+  providerId  String?     // new
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
-

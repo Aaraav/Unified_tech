@@ -73,6 +73,52 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
+router.post('/oauth-sync', async (req, res) => {
+  const { email, name, provider, providerId } = req.body;
+
+  if (!email || !provider || !providerId)
+    return error(res, 'Missing OAuth data', 400);
+console.log("user got it");
+  try {
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { providerId }
+        ]
+      }
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          provider,
+          providerId
+        }
+      });
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user);
+    await sendTokenMessage('store', {
+      token: refreshToken,
+      userId: user.id,
+      expiresInSec: 60 * 60 * 24 * 7
+    });
+
+    return success(res, {
+      accessToken,
+      refreshToken,
+      user: { id: user.id, email: user.email }
+    });
+  } catch (err) {
+    console.error('[OAUTH SYNC ERROR]', err);
+    return error(res, 'OAuth login failed', 500);
+  }
+});
+
+
 
 
 router.post('/signup', async (req, res) => {
