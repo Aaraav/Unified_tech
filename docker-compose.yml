@@ -69,10 +69,12 @@ services:
     build:
       context: ./services/oauth-service
     restart: always
-    ports:
-      - "8003:8003"
+    environment:
+      - PORT=8003
     env_file:
       - .env
+    expose:
+      - "8003"
     depends_on:
       - db
       - redis
@@ -101,6 +103,7 @@ services:
       - auth2
       - auth3
       - auth4
+      - oauth
     networks:
       - app
 

@@ -5,7 +5,7 @@ const passport = require('passport');
 passport.use(new GoogleStrategy({
   clientID: "929042959933-hud46f5hack7cqmdnkcqccq1cv42dmb1.apps.googleusercontent.com",
   clientSecret: "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",
-  callbackURL: 'http://localhost:8003/oauth/google/callback', // exposed via NGINX
+  callbackURL: 'http://localhost/oauth/google/callback', // exposed via NGINX
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     // POST to your actual exposed signup/login endpoint

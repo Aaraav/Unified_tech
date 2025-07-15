@@ -151,7 +151,7 @@ return success(res, {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({ where: { email } });
 
     if (!user || !(await verifyPassword(password, user.password))) {
       return error(res, 'Invalid credentials', 401);
