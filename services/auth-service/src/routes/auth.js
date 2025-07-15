@@ -124,7 +124,7 @@ console.log("user got it");
 router.post('/signup', async (req, res) => {
   try {
     const { email, password, name } = req.body;
-    const existing = await prisma.user.findUnique({ where: { email } });
+const existing = await prisma.user.findFirst({ where: { email } });
     if (existing) return error(res, 'User already exists', 409);
 
     const hashed = await hashPassword(password);
@@ -142,6 +142,8 @@ return success(res, {
 }, 201);
 
   } catch (err) {
+      console.error('[SIGNUP ERROR]', err); // 🔥 Add this line
+
     return error(res, 'Signup failed');
   }
 });

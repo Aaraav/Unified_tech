@@ -14,6 +14,9 @@ RUN npx prisma generate
 # RUN npx prisma migrate deploy
 
 # Make entrypoint executable
+# COPY wait-for-db.sh /wait-for-db.sh
+# RUN chmod +x /wait-for-db.sh
+
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 4001

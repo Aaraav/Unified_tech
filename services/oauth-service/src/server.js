@@ -4,7 +4,7 @@ const passport = require('passport');
 const oauthRoutes = require('./routes/oauth');
 
 require('./strategies/google');
-require('./strategies/linkedin');
+// require('./strategies/linkedin');
 
 const app = express();
 

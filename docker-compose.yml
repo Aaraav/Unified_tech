@@ -65,6 +65,19 @@ services:
     networks:
       - app
 
+  oauth:
+    build:
+      context: ./services/oauth-service
+    restart: always
+    ports:
+      - "8003:8003"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app
 
   token:
     build:
@@ -86,6 +99,8 @@ services:
     depends_on:
       - auth1
       - auth2
+      - auth3
+      - auth4
     networks:
       - app
 
@@ -102,6 +117,71 @@ services:
       - "5432:5432"
     networks:
       - app
+
+  # db:
+  #   image: citusdata/citus:11.2
+  #   container_name: db
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: uni
+  #   command: >
+  #     postgres -c shared_preload_libraries=citus
+             
+  #   depends_on:
+  #     - worker1
+  #     - worker2
+  #   volumes:
+  #     - ./init:/docker-entrypoint-initdb.d
+  #     # - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+  #   networks:
+  #     - app
+  # db:
+  #   image: citusdata/citus:11.2
+  #   container_name: db
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: uni
+  #   command: ["postgres", "-c", "shared_preload_libraries=citus"]
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data         # ✅ persistent volume
+  #     # - ./init:/docker-entrypoint-initdb.d             # ✅ run init.sql on first start
+  #   depends_on:
+  #     - worker1
+  #     - worker2
+  #   networks:
+  #     - app
+
+
+  # worker1:
+  #   image: citusdata/citus:11.2
+  #   container_name: worker1
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: uni
+  #   command: ["postgres", "-c", "shared_preload_libraries=citus"]
+  #   networks:
+  #     - app
+
+  # worker2:
+  #   image: citusdata/citus:11.2
+  #   container_name: worker2
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: uni
+  #   command: ["postgres", "-c", "shared_preload_libraries=citus"]
+  #   networks:
+  #     - app
+
+      
+
 
   redis:
     image: redis:alpine
